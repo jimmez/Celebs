@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Celebs v5</title>
+<style>
+  :root{
+    --bg:#111;
+    --panel:#1c1c1c;
+    --panel2:#161616;
+    --text:#f2f2f2;
+    --muted:#bdbdbd;
+    --accent:#ffffff;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #splash{
+    position:fixed; inset:0;
+    background:#000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+    z-index:100;
+    padding:20px;
+    text-align:center;
+  }
+
+  header{
+    background:var(--panel);
+    padding:10px 10px 12px 10px;
+    border-bottom:1px solid #2a2a2a;
+  }
+
+  .row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+  }
+
+  .pill{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 10px;
+    background:var(--panel2);
+    border:1px solid #2a2a2a;
+    border-radius:999px;
+    font-size:14px;
+  }
+
+  .pill input[type="checkbox"]{ transform:scale(1.2); }
+
+  .timebox{
+    width:72px;
+    font-size:16px;
+    padding:6px 8px;
+    border-radius:10px;
+    border:1px solid #2a2a2a;
+    background:#0f0f0f;
+    color:var(--text);
+    outline:none;
+  }
+
+  button{
+    font-size:16px;
+    padding:8px 12px;
+    border-radius:12px;
+    border:1px solid #2a2a2a;
+    background:#0f0f0f;
+    color:var(--text);
+    cursor:pointer;
+  }
+  button:active{ transform:translateY(1px); }
+
+  #promptWrap{
+    flex:1;
+    overflow:auto;
+    padding:18px 14px 24px 14px;
+  }
+
+  #prompt{
+    min-height: 42vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-size:34px;
+    line-height:1.25;
+    padding:18px 10px;
+    border-radius: var(--radius);
+    border:1px dashed #2a2a2a;
+    background:#0f0f0f;
+  }
+
+  .hint{
+    margin-top:10px;
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  .section{
+    margin-top:18px;
+    padding:12px;
+    border-radius: var(--radius);
+    border:1px solid #2a2a2a;
+    background:var(--panel2);
+  }
+  .section h3{
+    margin:0 0 10px 0;
+    font-size:15px;
+    font-weight:650;
+    color:var(--accent);
+    letter-spacing:0.2px;
+  }
+  .small{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.35;
+  }
+  .toggleline{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:10px;
+    border-radius:12px;
+    border:1px solid #2a2a2a;
+    background:#0f0f0f;
+    margin-bottom:10px;
+  }
+  .toggleline label{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:14px;
+  }
+  .toggleline input[type="checkbox"]{ transform:scale(1.2); }
+  .subgrid{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:10px;
+  }
+  @media (min-width: 840px){
+    .subgrid{ grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+
+<body>
+  <div id="splash">Jimmy James â€“ 29.12.2025</div>
+
+  <header id="controls">
+    <div class="row" style="gap:8px;">
+      <div class="pill"><input type="checkbox" id="pop" checked /><span>Pop Culture</span></div>
+      <div class="pill"><input type="checkbox" id="hist" checked /><span>Historical</span></div>
+
+      <div class="pill">
+        <span style="color:var(--muted)">Min</span>
+        <input class="timebox" type="number" id="min" value="0" inputmode="numeric" />
+        <span style="color:var(--muted)">Sec</span>
+        <input class="timebox" type="number" id="sec" value="30" inputmode="numeric" />
+      </div>
+
+      <button id="play">Play</button>
+      <button id="pause">Pause</button>
+      <button id="nextBtn" title="Next prompt">Next</button>
+    </div>
+  </header>
+
+  <div id="promptWrap">
+    <div id="prompt">Tap anywhere to begin</div>
+    <div class="hint">Tap anywhere on the empty space to advance. Buttons and inputs wonâ€™t trigger next.</div>
+
+    <!-- Extras (scroll below) -->
+    <div class="section">
+      <h3>Extras (toggle ON when you want them)</h3>
+      <div class="small">All add-ons default OFF. Scroll, switch on, and theyâ€™ll be layered into the prompt.</div>
+    </div>
+
+    <div class="section">
+      <h3>Emotions</h3>
+      <div class="toggleline">
+        <label><input type="checkbox" id="emoToggle" /> Add emotions above (50% GLAD, 50% negative)</label>
+        <span class="small">OFF by default</span>
+      </div>
+      <div class="small">
+        Uses your list for GLAD, BAD (Angry), SAD, AFRAD. Random picks include sub-emotions.
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>v2 Add setting + want</h3>
+      <div class="toggleline">
+        <label><input type="checkbox" id="v2Toggle" /> Add setting + want</label>
+        <span class="small">OFF by default</span>
+      </div>
+      <div class="subgrid">
+        <div class="small">Setting examples: â€œat a galaâ€, â€œin a subwayâ€, â€œon a spaceshipâ€.</div>
+        <div class="small">Want examples: â€œtrying to impressâ€, â€œhiding a secretâ€, â€œseeking revengeâ€.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>v3 Duo mode</h3>
+      <div class="toggleline">
+        <label><input type="checkbox" id="v3Toggle" /> Duo mode (two characters collide)</label>
+        <span class="small">OFF by default</span>
+      </div>
+      <div class="small">When ON, youâ€™ll get Character A + Character B and a collision prompt.</div>
+    </div>
+
+    <div class="section">
+      <h3>v4 Action verbs</h3>
+      <div class="toggleline">
+        <label><input type="checkbox" id="v4Toggle" /> Add an action verb</label>
+        <span class="small">OFF by default</span>
+      </div>
+      <div class="small">Gives a playable verb like â€œconfessâ€, â€œnegotiateâ€, â€œseduceâ€, â€œinvestigateâ€.</div>
+    </div>
+
+    <div class="section">
+      <h3>v5 Sound cue / music genre</h3>
+      <div class="toggleline">
+        <label><input type="checkbox" id="v5Toggle" /> Add a sound cue / genre</label>
+        <span class="small">OFF by default</span>
+      </div>
+      <div class="small">Adds a vibe like â€œdiscoâ€, â€œtrapâ€, â€œbaroqueâ€, â€œhorror stringsâ€, â€œsitcom laugh-trackâ€.</div>
+    </div>
+
+    <div class="section">
+      <h3>Notes</h3>
+      <div class="small">
+        â€¢ Tap empty space to advance. <br/>
+        â€¢ â€œPlayâ€ starts the timer using Min/Sec. <br/>
+        â€¢ Category toggles stay ON by default. <br/>
+        â€¢ Character pool is 2000+ (expanded with variations).
+      </div>
+    </div>
+
+  </div>
+
+<script>
+/* ---------------------------
+   Characters (base lists)
+---------------------------- */
+const popCultureBase = [
+  "Brad Pitt","Meryl Streep","BeyoncÃ©","Taylor Swift","Keanu Reeves","Leonardo DiCaprio","Scarlett Johansson",
+  "Oprah Winfrey","Lady Gaga","Rihanna","Kanye West","Snoop Dogg","Drake","Adele","Dolly Parton",
+  "Barack Obama","Donald Trump","Greta Thunberg","Elon Musk","Jeff Bezos",
+  "Harry Potter","Hermione Granger","Darth Vader","Luke Skywalker","Leia Organa",
+  "Sherlock Holmes","James Bond","Katniss Everdeen","Walter White","Saul Goodman",
+  "Homer Simpson","Lisa Simpson","Tony Stark","Peter Parker","Wednesday Addams",
+  "Lara Croft","Indiana Jones","Frodo Baggins","Gandalf","Daenerys Targaryen",
+  "Michael Scott","Rick Sanchez","Morty Smith","Spock","The Doctor (Doctor Who)",
+  "Barbie","Ken","Godzilla","King Kong","Pikachu",
+  "J.K. Rowling","Stephen King","George R.R. Martin","Haruki Murakami","Margaret Atwood",
+  "Quentin Tarantino","Christopher Nolan","Sofia Coppola","Hayao Miyazaki","Stan Lee"
+];
+
+const historicalBase = [
+  "Leonardo da Vinci","Michelangelo","Galileo Galilei","Isaac Newton","Albert Einstein","Marie Curie","Nikola Tesla",
+  "Ada Lovelace","Alan Turing","Thomas Edison","Johannes Gutenberg","James Watt","Alexander Graham Bell",
+  "Cleopatra","Julius Caesar","Augustus","Napoleon Bonaparte","Joan of Arc","Queen Elizabeth I",
+  "Abraham Lincoln","Winston Churchill","Franklin D. Roosevelt","Angela Merkel","Margaret Thatcher",
+  "Mahatma Gandhi","Nelson Mandela","Martin Luther King Jr.","Malala Yousafzai",
+  "Socrates","Plato","Aristotle","Confucius","Sun Tzu",
+  "Wolfgang Amadeus Mozart","Ludwig van Beethoven","Johann Sebastian Bach","FrÃ©dÃ©ric Chopin","Pyotr Tchaikovsky",
+  "Antonio Vivaldi","Claude Debussy","Igor Stravinsky",
+  "William Shakespeare","Jane Austen","Mary Shelley","Mark Twain","Leo Tolstoy",
+  "Frida Kahlo","Vincent van Gogh","Pablo Picasso","Rembrandt","Johannes Vermeer"
+];
+
+// Expand to 2000+ by creating variations while keeping recognizable core
+function expand(list, multiplier){
+  const out = [];
+  const tags = [
+    "in sunglasses","on live TV","at a quiet cafÃ©","with a secret plan","mid-scandal",
+    "undercover","at 3AM","with a broken microphone","holding a bouquet","wearing armor",
+    "in a limousine","on a rooftop","in a library","in a courtroom","at a festival"
+  ];
+  for (let i = 0; i < multiplier; i++){
+    for (const name of list){
+      const tag = tags[(i + name.length) % tags.length];
+      out.push(`${name} (${i+1}) ${tag}`);
+    }
+  }
+  return out;
+}
+
+// 60 x (~50) = ~3000-ish total when combined (pop+hist), comfortably above 2000
+const POP = expand(popCultureBase, 35);
+const HIST = expand(historicalBase, 35);
+
+/* ---------------------------
+   Emotions (your structure)
+---------------------------- */
+const emotions = {
+  glad: [
+    {primary:"ðŸ˜Š GLAD(Happy) â€¢ Playful", subs:["Aroused","Cheeky"]},
+    {primary:"ðŸ˜Š GLAD(Happy) â€¢ Content", subs:["Free","Joyful"]},
+    {primary:"ðŸ˜Š GLAD(Happy) â€¢ Interested", subs:["Curious","Inquisitive"]},
+    {primary:"ðŸ˜Š GLAD(Happy) â€¢ Proud", subs:["Successful","Confident"]},
+    {primary:"ðŸ˜Š GLAD(Happy) â€¢ Accepted", subs:["Respected","Valued"]},
+    {primary:"ðŸ˜Š GLAD(Happy) â€¢ Powerful", subs:["Courageous","Creative"]},
+    {primary:"ðŸ˜Š GLAD(Happy) â€¢ Peaceful", subs:["Loving","Thankful"]},
+    {primary:"ðŸ˜Š GLAD(Happy) â€¢ Trusting", subs:["Sensitive","Intimate"]},
+    {primary:"ðŸ˜Š GLAD(Happy) â€¢ Optimistic", subs:["Hopeful","Inspired"]}
+  ],
+  badAngry: [
+    {primary:"ðŸ˜¡ BAD (Angry) â€¢ Let down", subs:["Betrayed","Resentful"]},
+    {primary:"ðŸ˜¡ BAD (Angry) â€¢ Humiliated", subs:["Disrespected","Ridiculed"]},
+    {primary:"ðŸ˜¡ BAD (Angry) â€¢ Bitter", subs:["Indignant","Violated"]},
+    {primary:"ðŸ˜¡ BAD (Angry) â€¢ Mad", subs:["Furious","Jealous"]},
+    {primary:"ðŸ˜¡ BAD (Angry) â€¢ Aggressive", subs:["Provoked","Hostile"]},
+    {primary:"ðŸ˜¡ BAD (Angry) â€¢ Frustrated", subs:["Infuriated","Annoyed"]},
+    {primary:"ðŸ˜¡ BAD (Angry) â€¢ Distant", subs:["Withdrawn","Numb"]},
+    {primary:"ðŸ˜¡ BAD (Angry) â€¢ Critical", subs:["Sceptical","Dismissive"]}
+  ],
+  sad: [
+    {primary:"ðŸ˜” SAD â€¢ Lonely", subs:["Isolated","Abandoned"]},
+    {primary:"ðŸ˜” SAD â€¢ Vulnerable", subs:["Victimised","Fragile"]},
+    {primary:"ðŸ˜” SAD â€¢ Despair", subs:["Grief","Powerless"]},
+    {primary:"ðŸ˜” SAD â€¢ Guilty", subs:["Remorseful","Ashamed"]},
+    {primary:"ðŸ˜” SAD â€¢ Depressed", subs:["Empty","Inferior"]},
+    {primary:"ðŸ˜” SAD â€¢ Hurt", subs:["Embarrassed","Disappointed"]}
+  ],
+  afrad: [
+    {primary:"ðŸ˜¨ AFRAD (Fearful) â€¢ Scared", subs:["Helpless","Frightened"]},
+    {primary:"ðŸ˜¨ AFRAD (Fearful) â€¢ Anxious", subs:["Overwhelmed","Worried"]},
+    {primary:"ðŸ˜¨ AFRAD (Fearful) â€¢ Insecure", subs:["Inadequate","Inferior"]},
+    {primary:"ðŸ˜¨ AFRAD (Fearful) â€¢ Weak", subs:["Worthless","Insignificant"]},
+    {primary:"ðŸ˜¨ AFRAD (Fearful) â€¢ Rejected", subs:["Excluded","Persecuted"]},
+    {primary:"ðŸ˜¨ AFRAD (Fearful) â€¢ Threatened", subs:["Nervous","Exposed"]}
+  ]
+};
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function randomEmotionLine(){
+  // 50% GLAD, 50% negative among (badAngry/sad/afrad)
+  const happy = Math.random() < 0.5;
+  let bucket;
+  if (happy){
+    bucket = emotions.glad;
+  }else{
+    const negBuckets = [emotions.badAngry, emotions.sad, emotions.afrad];
+    bucket = pick(negBuckets);
+  }
+  const node = pick(bucket);
+  const sub = pick(node.subs);
+  return `${node.primary} â†’ ${sub}`;
+}
+
+/* ---------------------------
+   v2: Setting + Want
+---------------------------- */
+const settings = [
+  "at a gala","in a subway","on a spaceship","in a tiny kitchen","inside a courtroom",
+  "at a karaoke bar","in a forest at night","on a talk show","at a funeral reception",
+  "during a livestream","in a museum","backstage","on a mountaintop","at a wedding",
+  "in a therapistâ€™s office","at a police station","in a hotel lobby","in a yoga studio",
+  "at a fancy restaurant","on a ferry in rough seas","in a library","in a rehearsal room",
+  "in a recording studio","at a political rally","at the dentist"
+];
+
+const wants = [
+  "trying to impress someone","hiding a secret","seeking revenge","desperate to be liked",
+  "trying to confess something","trying to sell an idea","trying to escape quietly",
+  "trying to get promoted","trying to win back respect","trying to avoid blame",
+  "trying to recruit an ally","trying to prove theyâ€™re innocent","trying to steal something",
+  "trying to protect someone","trying to get an apology","trying to sabotage a rival",
+  "trying to keep the peace","trying to start a fight","trying to charm the room",
+  "trying to stay unnoticed","trying to be the star","trying to regain control"
+];
+
+/* ---------------------------
+   v3: Duo collision prompts
+---------------------------- */
+const collisions = [
+  "They both think THEY are the star.",
+  "One needs help. The other wants payment.",
+  "A secret from the past leaks into the room.",
+  "A misunderstanding turns into a power game.",
+  "One is lying beautifully. The other is allergic to lies.",
+  "They have the same goal, opposite methods.",
+  "Theyâ€™re forced to collaborate under time pressure.",
+  "One wants peace. The other wants a headline.",
+  "A tiny object becomes the entire argument.",
+  "They both want the same personâ€™s approval."
+];
+
+/* ---------------------------
+   v4: Action verbs
+---------------------------- */
+const verbs = [
+  "confess","negotiate","investigate","accuse","flirt","seduce","interrogate",
+  "apologize","threaten","comfort","recruit","betray","plead","brag","blackmail",
+  "pitch","improvise a cover story","stall for time","challenge","persuade","mediate",
+  "celebrate","mourn","declare war","declare love","make a toast","demand a refund"
+];
+
+/* ---------------------------
+   v5: Sound cue / genre
+---------------------------- */
+const soundCues = [
+  "ðŸŽ§ disco","ðŸŽ§ trap","ðŸŽ§ synthwave","ðŸŽ§ baroque","ðŸŽ§ jazz noir","ðŸŽ§ arena rock",
+  "ðŸŽ§ Bollywood","ðŸŽ§ lo-fi","ðŸŽ§ techno","ðŸŽ§ reggae","ðŸŽ§ opera","ðŸŽ§ horror strings",
+  "ðŸŽ§ sitcom laugh-track","ðŸŽ§ nature ambience","ðŸŽ§ courtroom drama theme",
+  "ðŸŽ§ 8-bit game music","ðŸŽ§ cinematic trailer","ðŸŽ§ spy thriller pulse"
+];
+
+/* ---------------------------
+   Pool + prompt builder
+---------------------------- */
+function buildPool(){
+  let pool = [];
+  if (document.getElementById("pop").checked) pool = pool.concat(POP);
+  if (document.getElementById("hist").checked) pool = pool.concat(HIST);
+  return pool;
+}
+
+function nextPrompt(){
+  const pool = buildPool();
+  if (!pool.length) return;
+
+  const useDuo = document.getElementById("v3Toggle").checked;
+  const useEmo = document.getElementById("emoToggle").checked;
+  const useV2  = document.getElementById("v2Toggle").checked;
+  const useV4  = document.getElementById("v4Toggle").checked;
+  const useV5  = document.getElementById("v5Toggle").checked;
+
+  let lines = [];
+
+  if (useEmo){
+    lines.push(randomEmotionLine());
+  }
+
+  if (useDuo){
+    const a = pick(pool);
+    let b = pick(pool);
+    // ensure different
+    for (let i=0;i<10 && b===a;i++) b = pick(pool);
+    lines.push(`ðŸŽ­ ${a}`);
+    lines.push(`ðŸŽ­ ${b}`);
+    lines.push(`âš¡ Collision: ${pick(collisions)}`);
+  }else{
+    lines.push(`ðŸŽ­ ${pick(pool)}`);
+  }
+
+  if (useV2){
+    lines.push(`ðŸ“ Setting: ${pick(settings)}`);
+    lines.push(`ðŸŽ¯ Want: ${pick(wants)}`);
+  }
+
+  if (useV4){
+    lines.push(`ðŸ§© Action: ${pick(verbs)}`);
+  }
+
+  if (useV5){
+    lines.push(`ðŸ”Š Sound: ${pick(soundCues)}`);
+  }
+
+  document.getElementById("prompt").textContent = lines.join("\n");
+}
+
+/* ---------------------------
+   Tap anywhere to advance
+---------------------------- */
+function isInteractive(el){
+  if (!el) return false;
+  const tag = el.tagName;
+  if (tag === "BUTTON" || tag === "INPUT" || tag === "LABEL") return true;
+  return el.closest && el.closest("#controls") || el.closest(".section");
+}
+
+// next button
+document.getElementById("nextBtn").addEventListener("click", (e)=>{ e.stopPropagation(); nextPrompt(); });
+
+// Body click advances unless clicking interactive
+document.body.addEventListener("click", (e)=>{
+  if (isInteractive(e.target)) return;
+  nextPrompt();
+});
+
+/* ---------------------------
+   Play / Pause timer
+---------------------------- */
+let timer = null;
+
+function getIntervalMs(){
+  const m = parseInt(document.getElementById("min").value, 10) || 0;
+  const s = parseInt(document.getElementById("sec").value, 10) || 0;
+  const total = Math.max(0, m*60 + s);
+  return total * 1000;
+}
+
+document.getElementById("play").addEventListener("click", (e)=>{
+  e.stopPropagation();
+  clearInterval(timer);
+  const ms = getIntervalMs();
+  if (ms > 0){
+    // also advance immediately so play feels alive
+    nextPrompt();
+    timer = setInterval(nextPrompt, ms);
+  }
+});
+
+document.getElementById("pause").addEventListener("click", (e)=>{
+  e.stopPropagation();
+  clearInterval(timer);
+});
+
+["min","sec"].forEach(id=>{
+  const el = document.getElementById(id);
+  el.addEventListener("click", (e)=>{ e.stopPropagation(); el.select(); });
+  el.addEventListener("focus", (e)=>{ e.stopPropagation(); el.select(); });
+});
+
+/* ---------------------------
+   Splash 5s
+---------------------------- */
+setTimeout(()=>{
+  document.getElementById("splash").style.display = "none";
+}, 5000);
+</script>
+</body>
+</html>
